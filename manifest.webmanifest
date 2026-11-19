@@ -1,0 +1,10 @@
+{
+  "name": "Equinox Gym Management",
+  "short_name": "Equinox Gym",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#0b0c0e",
+  "theme_color": "#101010",
+  "description": "Equinox Gym member and fitness management portal",
+  "icons": []
+}

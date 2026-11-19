@@ -1,0 +1,40 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function profile() { return get(/databases/$(database)/documents/users/$(request.auth.uid)).data; }
+    function isAdmin() { return signedIn() && profile().role == "admin"; }
+    function isTrainer() { return signedIn() && profile().role == "trainer"; }
+    function isMember() { return signedIn() && profile().role == "member"; }
+    function assignedMember(memberId) {
+      return exists(/databases/$(database)/documents/members/$(memberId)) &&
+        (get(/databases/$(database)/documents/members/$(memberId)).data.uid == request.auth.uid ||
+         get(/databases/$(database)/documents/members/$(memberId)).data.trainerUid == request.auth.uid);
+    }
+    match /users/{uid} {
+      allow read: if signedIn() && (request.auth.uid == uid || isAdmin());
+      allow create, update, delete: if isAdmin();
+    }
+    match /members/{id} {
+      allow read: if isAdmin() || (isTrainer() && resource.data.trainerUid == request.auth.uid) ||
+        (isMember() && resource.data.uid == request.auth.uid);
+      allow create: if isAdmin() || isTrainer();
+      allow update: if isAdmin() || (isTrainer() && resource.data.trainerUid == request.auth.uid);
+      allow delete: if isAdmin();
+    }
+    match /attendance/{id} {
+      allow read: if isAdmin() || (signedIn() && assignedMember(resource.data.memberId));
+      allow create: if isAdmin() || (isTrainer() && assignedMember(request.resource.data.memberId));
+      allow update, delete: if isAdmin();
+    }
+    match /payments/{id} {
+      allow read: if isAdmin() || (isMember() && assignedMember(resource.data.memberId));
+      allow create, update, delete: if isAdmin();
+    }
+    match /progress/{id} {
+      allow read: if isAdmin() || (signedIn() && assignedMember(resource.data.memberId));
+      allow create: if isAdmin() || (isTrainer() && assignedMember(request.resource.data.memberId));
+      allow update, delete: if isAdmin() || (isTrainer() && assignedMember(resource.data.memberId));
+    }
+  }
+}
