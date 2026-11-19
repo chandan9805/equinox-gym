@@ -44,7 +44,15 @@ import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from
 import { getFirestore, doc, getDoc, collection, getDocs, addDoc, updateDoc, deleteDoc, query, where, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 // Paste your Firebase web app config here (see README).
-const firebaseConfig = { apiKey:"YOUR_API_KEY", authDomain:"YOUR_PROJECT.firebaseapp.com", projectId:"YOUR_PROJECT_ID", appId:"YOUR_APP_ID" };
+const firebaseConfig = {
+  apiKey: "AIzaSyCX0A03p6q8FPh3lhQliwflNfx27MRyJdE",
+  authDomain: "equinox-gym-4e1d4.firebaseapp.com",
+  projectId: "equinox-gym-4e1d4",
+  storageBucket: "equinox-gym-4e1d4.firebasestorage.app",
+  messagingSenderId: "195200017423",
+  appId: "1:195200017423:web:b6d527f5b53c0e93a62f7a",
+  measurementId: "G-J0K0R885NW"
+};
 const configured = firebaseConfig.apiKey !== "YOUR_API_KEY";
 let app,auth,db,user=null,role=null,demo=false,cache={members:[],attendance:[],payments:[],progress:[]},tab="overview";
 if(configured){app=initializeApp(firebaseConfig);auth=getAuth(app);db=getFirestore(app);onAuthStateChanged(auth,async u=>{if(u){user=u;try{const p=await getDoc(doc(db,"users",u.uid));if(!p.exists())throw Error("Your account has no role profile. Ask the administrator.");role=p.data().role; if(!["admin","trainer","member"].includes(role))throw Error("Invalid account role.");await startApp();}catch(e){toast(e.message);await signOut(auth);}}else if(!demo)showLogin();});}
